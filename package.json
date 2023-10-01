@@ -1,0 +1,34 @@
+{
+  "name": "app-logs-sdk-js",
+  "version": "0.0.0",
+  "description": "Javascript SDK for app-logs error tracker",
+  "main": "dist/index.js",
+  "directories": {
+    "lib": "dist"
+  },
+  "scripts": {
+    "start": "tsc && node dist/test-server/run.js",
+    "test": "echo \"No test specified\"",
+    "build": "tsc",
+    "prepare": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/app-logs/app-logs-sdk-js.git"
+  },
+  "keywords": [
+    "error-tracking",
+    "logs",
+    "logs-management",
+    "application-logs"
+  ],
+  "author": "AppLogs",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/app-logs/app-logs-sdk-js/issues"
+  },
+  "homepage": "https://github.com/app-logs/app-logs-sdk-js#readme",
+  "devDependencies": {
+    "typescript": "^5.2.2"
+  }
+}
