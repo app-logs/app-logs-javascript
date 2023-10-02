@@ -1,6 +1,6 @@
 {
   "name": "app-logs-sdk-js",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Javascript SDK for app-logs error tracker",
   "main": "dist/index.js",
   "directories": {
