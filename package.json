@@ -1,5 +1,5 @@
 {
-  "name": "app-logs-sdk-js",
+  "name": "app-logs-javascript",
   "version": "0.0.1",
   "description": "Javascript SDK for app-logs error tracker",
   "main": "dist/index.js",
