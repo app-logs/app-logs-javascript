@@ -1,5 +1,8 @@
 {
   "name": "app-logs-javascript",
+  "engines": {
+    "node": "v18.x"
+  },
   "version": "0.0.1",
   "description": "Javascript SDK for app-logs error tracker",
   "main": "dist/index.js",
@@ -7,7 +10,6 @@
     "lib": "dist"
   },
   "scripts": {
-    "start": "tsc && node dist/test-server/run.js",
     "test": "echo \"No test specified\"",
     "build": "tsc",
     "prepare": "tsc"
