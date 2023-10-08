@@ -2,6 +2,8 @@ import axios from "axios";
 import { serializeError } from "./helpers/serialize-error";
 import IEventData from "./interfaces/IEventData";
 import IInitOptions from "./interfaces/IInitOptions";
+import INodeContext from "./interfaces/INodeContext";
+import IBrowserContext from "./interfaces/IBrowserContext";
 
 let _appLogsInitOptions: IInitOptions | undefined;
 
@@ -41,7 +43,7 @@ function isNodeContext() {
 }
 
 function getBrowserContext() {
-    let data: any = undefined;
+    let data: Partial<IBrowserContext> | undefined = undefined;
 
     if (isBrowserContext()) {
         // initialize data
@@ -58,21 +60,7 @@ function getBrowserContext() {
 }
 
 function getNodeContext() {
-    let data: Partial<{
-        usage: { rss: string; heapTotal: string; heapUsed: string; external: string },
-        environment: string;
-        processId: number;
-        os: {
-            name: string,
-            architecture: string,
-            machine: string,
-            platform: string,
-            type: string,
-            version: string,
-            cpus: string,
-            freemem: string
-        }
-    }> | undefined = undefined;
+    let data: Partial<INodeContext> | undefined = undefined;
 
     if (isNodeContext()) {
         data = {};
@@ -120,12 +108,14 @@ function isServiceWorkerEnvironment() {
 async function captureException(input: any, extra?: Record<string, any>) {
     // construct the payload
     const payload: IEventData = {
+        event_id: generateUuid(),
         level: "error",
         data: serializeError(input),
         extra,
         browserContext: getBrowserContext(),
         nodeContext: getNodeContext(),
-        serviceWorkerEnvironment: isServiceWorkerEnvironment()
+        serviceWorkerEnvironment: isServiceWorkerEnvironment(),
+        timestamp: new Date().getTime()
     }
 
     // initial options
@@ -148,14 +138,33 @@ async function captureException(input: any, extra?: Record<string, any>) {
 
 }
 
-async function logEvent(eventData: Omit<IEventData, "browserContext" | "nodeContext" | "serviceWorkerEnvironment">) {
+function generateUuid() {
+    let
+        d = new Date().getTime(),
+        d2 = ((typeof performance !== 'undefined') && performance.now && (performance.now() * 1000)) || 0;
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+        let r = Math.random() * 16;
+        if (d > 0) {
+            r = (d + r) % 16 | 0;
+            d = Math.floor(d / 16);
+        } else {
+            r = (d2 + r) % 16 | 0;
+            d2 = Math.floor(d2 / 16);
+        }
+        return (c == 'x' ? r : (r & 0x7 | 0x8)).toString(16);
+    });
+}
+
+async function logEvent(eventData: Omit<IEventData, "browserContext" | "nodeContext" | "serviceWorkerEnvironment" | "timestamp">) {
     // construct the payload
     const payload: IEventData = {
+        event_id: generateUuid(),
         ...eventData,
         data: serializeError(eventData.data),
         browserContext: getBrowserContext(),
         nodeContext: getNodeContext(),
-        serviceWorkerEnvironment: isServiceWorkerEnvironment()
+        serviceWorkerEnvironment: isServiceWorkerEnvironment(),
+        timestamp: new Date().getTime()
     }
 
     // initial options
