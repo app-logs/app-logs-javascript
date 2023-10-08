@@ -10,8 +10,10 @@ let _appLogsInitOptions: IInitOptions | undefined;
 
 declare global {
     interface Window {
-        appLogsInitOptions: IInitOptions
+        appLogsInitOptions: IInitOptions | undefined
     }
+
+    var appLogsInitOptions: IInitOptions | undefined;
 }
 
 /**
@@ -31,12 +33,19 @@ function init(options: IInitOptions) {
 
 function getAppLogsInitOptions(): IInitOptions | undefined {
     if (isNodeContext()) {
+        // if the drain url is not defined, we take it from the env
+        if (!global.appLogsInitOptions?.drainUrl) {
+            global.appLogsInitOptions = {
+                drainUrl: (process.env.APP_LOGS_DRAIN_URL ?? process.env.NEXT_PUBLIC_APP_LOGS_DRAIN_URL)!
+            }
+        }
+
         return global.appLogsInitOptions;
     } else if (isBrowserContext()) {
         return window.appLogsInitOptions;
     } else {
-        _appLogsInitOptions;
-    }
+        return _appLogsInitOptions;
+    };
 }
 
 function isBrowserContext() {
@@ -120,6 +129,7 @@ async function captureException(input: any, extra?: Record<string, any>) {
     // construct the payload
     const payload: IEventData = {
         event_id: generateUuid(),
+        source: "javascript",
         level: "error",
         data: serializeError(input),
         extra,
@@ -133,7 +143,7 @@ async function captureException(input: any, extra?: Record<string, any>) {
     const initOptions = getAppLogsInitOptions();
 
     // initialization options
-    if (initOptions) {
+    if (initOptions?.drainUrl) {
         await axios.request({
             url: initOptions.drainUrl,
             method: 'post',
@@ -171,7 +181,7 @@ function generateUuid() {
  * 
  * @param eventData event data
  */
-async function logEvent(eventData: Omit<IEventData, "browserContext" | "nodeContext" | "serviceWorkerEnvironment" | "timestamp">) {
+async function logEvent(eventData: Omit<IEventData, "source" | "browserContext" | "nodeContext" | "serviceWorkerEnvironment" | "timestamp">) {
     // construct the payload
     const payload: IEventData = {
         event_id: generateUuid(),
@@ -180,14 +190,15 @@ async function logEvent(eventData: Omit<IEventData, "browserContext" | "nodeCont
         browserContext: getBrowserContext(),
         nodeContext: getNodeContext(),
         serviceWorkerEnvironment: isServiceWorkerEnvironment(),
-        timestamp: new Date().getTime()
+        source: "javascript",
+        timestamp: new Date().getTime(),
     }
 
     // initial options
     const initOptions = getAppLogsInitOptions();
 
     // initialization options
-    if (initOptions) {
+    if (initOptions?.drainUrl) {
         await axios.request({
             url: initOptions.drainUrl,
             method: 'post',
@@ -198,7 +209,7 @@ async function logEvent(eventData: Omit<IEventData, "browserContext" | "nodeCont
             console.warn('AppLogs SDK: Unable to submit the log event.');
         })
     } else {
-        console.warn('AppLogs SDK: Unable to get initialization options.')
+        console.warn('AppLogs SDK: make sure you call the init method with the required parameter (drainUrl).')
     }
 }
 

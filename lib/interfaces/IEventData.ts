@@ -3,6 +3,7 @@ import INodeContext from "./INodeContext";
 
 export default interface IEventData {
     event_id?: string;
+    source: "javascript";
     level?: "info" | "warning" | "error" | "debug" | "fatal";
     data: any,
     extra?: Record<string, any>;
