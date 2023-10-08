@@ -14,6 +14,11 @@ declare global {
     }
 }
 
+/**
+ * Initialize the client
+ * 
+ * @param options initialization options
+ */
 function init(options: IInitOptions) {
     if (isNodeContext()) {
         global.appLogsInitOptions = options;
@@ -105,6 +110,12 @@ function isServiceWorkerEnvironment() {
     return typeof importScripts === "function";
 }
 
+/**
+ * Capture an exception
+ * 
+ * @param input exception data
+ * @param extra extra information
+ */
 async function captureException(input: any, extra?: Record<string, any>) {
     // construct the payload
     const payload: IEventData = {
@@ -155,6 +166,11 @@ function generateUuid() {
     });
 }
 
+/**
+ * Log an event
+ * 
+ * @param eventData event data
+ */
 async function logEvent(eventData: Omit<IEventData, "browserContext" | "nodeContext" | "serviceWorkerEnvironment" | "timestamp">) {
     // construct the payload
     const payload: IEventData = {
