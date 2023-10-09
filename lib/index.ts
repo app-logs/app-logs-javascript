@@ -97,7 +97,7 @@ function getNodeContext() {
         data.processId = process.pid;
 
         // os information
-        const os = require('node:os');
+        const os = require('os');
 
         // os information
         data.os = {
