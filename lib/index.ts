@@ -80,15 +80,18 @@ function getNodeContext() {
         data = {};
 
         // get app usage
-        const usage = process.memoryUsage();
+        const usage = process.memoryUsage ? process.memoryUsage() : null;
 
         // set usage
-        data.usage = {
+        data.usage = usage ? {
             rss: `${usage.rss / 1024 / 1024} mb`,
             heapTotal: `${usage.heapTotal / 1024 / 1024} mb`,
             heapUsed: `${usage.heapUsed / 1024 / 1024} mb`,
             external: `${usage.external / 1024 / 1024} mb`,
-        };
+        } : undefined;
+
+        // set process value
+        data.processTitle = process.title;
 
         // node environment
         data.environment = process.env.NODE_ENV;
@@ -126,37 +129,40 @@ function isServiceWorkerEnvironment() {
  * @param extra extra information
  */
 async function captureException(input: any, extra?: Record<string, any>) {
-    // construct the payload
-    const payload: IEventData = {
-        event_id: generateUuid(),
-        source: "javascript",
-        level: "error",
-        data: serializeError(input),
-        extra,
-        browserContext: getBrowserContext(),
-        nodeContext: getNodeContext(),
-        serviceWorkerEnvironment: isServiceWorkerEnvironment(),
-        timestamp: new Date().getTime()
+    try {
+        // construct the payload
+        const payload: IEventData = {
+            event_id: generateUuid(),
+            source: "javascript",
+            level: "error",
+            data: serializeError(input),
+            extra,
+            browserContext: getBrowserContext(),
+            nodeContext: getNodeContext(),
+            serviceWorkerEnvironment: isServiceWorkerEnvironment(),
+            timestamp: new Date().getTime()
+        }
+
+        // initial options
+        const initOptions = getAppLogsInitOptions();
+
+        // initialization options
+        if (initOptions?.drainUrl) {
+            await axios.request({
+                url: initOptions.drainUrl,
+                method: 'post',
+                data: payload
+            }).then(() => {
+                // success
+            }).catch(() => {
+                console.warn('AppLogs SDK: Unable to submit the captured exception.');
+            })
+        } else {
+            console.warn('AppLogs SDK: Unable to get initialization options.')
+        }
+    } catch (error) {
+        console.error('AppLogs SDK: internal error.', serializeError(error));
     }
-
-    // initial options
-    const initOptions = getAppLogsInitOptions();
-
-    // initialization options
-    if (initOptions?.drainUrl) {
-        await axios.request({
-            url: initOptions.drainUrl,
-            method: 'post',
-            data: payload
-        }).then(() => {
-            // success
-        }).catch(() => {
-            console.warn('AppLogs SDK: Unable to submit the captured exception.');
-        })
-    } else {
-        console.warn('AppLogs SDK: Unable to get initialization options.')
-    }
-
 }
 
 function generateUuid() {
@@ -182,34 +188,38 @@ function generateUuid() {
  * @param eventData event data
  */
 async function logEvent(eventData: Omit<IEventData, "source" | "browserContext" | "nodeContext" | "serviceWorkerEnvironment" | "timestamp">) {
-    // construct the payload
-    const payload: IEventData = {
-        event_id: generateUuid(),
-        ...eventData,
-        data: serializeError(eventData.data),
-        browserContext: getBrowserContext(),
-        nodeContext: getNodeContext(),
-        serviceWorkerEnvironment: isServiceWorkerEnvironment(),
-        source: "javascript",
-        timestamp: new Date().getTime(),
-    }
+    try {
+        // construct the payload
+        const payload: IEventData = {
+            event_id: generateUuid(),
+            ...eventData,
+            data: serializeError(eventData.data),
+            browserContext: getBrowserContext(),
+            nodeContext: getNodeContext(),
+            serviceWorkerEnvironment: isServiceWorkerEnvironment(),
+            source: "javascript",
+            timestamp: new Date().getTime(),
+        }
 
-    // initial options
-    const initOptions = getAppLogsInitOptions();
+        // initial options
+        const initOptions = getAppLogsInitOptions();
 
-    // initialization options
-    if (initOptions?.drainUrl) {
-        await axios.request({
-            url: initOptions.drainUrl,
-            method: 'post',
-            data: payload
-        }).then(() => {
-            // success
-        }).catch(() => {
-            console.warn('AppLogs SDK: Unable to submit the log event.');
-        })
-    } else {
-        console.warn('AppLogs SDK: make sure you call the init method with the required parameter (drainUrl).')
+        // initialization options
+        if (initOptions?.drainUrl) {
+            await axios.request({
+                url: initOptions.drainUrl,
+                method: 'post',
+                data: payload
+            }).then(() => {
+                // success
+            }).catch(() => {
+                console.warn('AppLogs SDK: Unable to submit the log event.');
+            })
+        } else {
+            console.warn('AppLogs SDK: make sure you call the init method with the required parameter (drainUrl).')
+        }
+    } catch (error) {
+        console.error('AppLogs SDK: internal error.', serializeError(error));
     }
 }
 
