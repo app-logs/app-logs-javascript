@@ -1,9 +1,9 @@
 import axios from "axios";
 import { serializeError } from "./helpers/serialize-error";
+import IBrowserContext from "./interfaces/IBrowserContext";
 import IEventData from "./interfaces/IEventData";
 import IInitOptions from "./interfaces/IInitOptions";
 import INodeContext from "./interfaces/INodeContext";
-import IBrowserContext from "./interfaces/IBrowserContext";
 
 let _appLogsInitOptions: IInitOptions | undefined;
 
@@ -79,6 +79,9 @@ function getNodeContext() {
     if (isNodeContext()) {
         data = {};
 
+        // browser context
+        data.browserContext = getBrowserContext();
+
         // get app usage
         const usage = process.memoryUsage ? process.memoryUsage() : null;
 
@@ -102,16 +105,22 @@ function getNodeContext() {
         // os information
         const os = require('os');
 
+        // os parameters
+        const osParameters = Object.keys(os);
+
         // os information
-        data.os = {
-            name: os.hostname(),
-            architecture: os.arch(),
-            machine: os.machine(),
-            platform: os.platform(),
-            type: os.type(),
-            version: os.version(),
-            cpus: os.cpus(),
-            freemem: os.freemem()
+        data.os = {};
+
+        for (const osKey of osParameters) {
+            try {
+                if (typeof os[osKey] === "function") {
+                    data.os[osKey] = os[osKey]();
+                } else {
+                    data.os[osKey] = os[osKey];
+                }
+            } catch (error) {
+                // ignore
+            }
         }
     }
 
