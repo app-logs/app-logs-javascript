@@ -28,21 +28,21 @@ yarn add app-logs-javascript
 Once the package is installed, you can import the init function and initialize the client into your JavaScript code as follows:
 
 ```javascript
-import { init } from 'app-logs-javascript';
+import AppLogs from 'app-logs-javascript';
 
 // initialization (calling this function one time is enough)
-init({ drainUrl: 'YOUR_DRAIN_URL_FROM_THE_APP_SETTING' });
+AppLogs.init({ drainUrl: 'YOUR_DRAIN_URL_FROM_THE_APP_SETTING' });
 ```
 
 To log an error or any data, simply call the `logEvent()` method:
 ```javascript
-import { logEvent } from 'app-logs-javascript';
+import AppLogs from 'app-logs-javascript';
 
 // data
 const transferData = { txId: 2023, label: 'test payment' }
 
 // log the event
-logEvent({
+AppLogs.logEvent({
     level: "info",
     data: transferData
 });
@@ -50,13 +50,13 @@ logEvent({
 
 To catch an exception, simply call the `captureException()` method in the catch block as follows:
 ```javascript
-import { captureException } from 'app-logs-javascript';
+import AppLogs from 'app-logs-javascript';
 
 try {
     // your logic here
 } catch(error) {
     // log the exception
-    captureException(error, {
+    AppLogs.captureException(error, {
         userId: 'usr2023',
         operation: 'registration process'
     });
