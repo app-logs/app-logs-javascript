@@ -3,7 +3,7 @@
   "engines": {
     "node": "v18.x"
   },
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "Javascript SDK for app-logs error tracker",
   "main": "dist/index.js",
   "directories": {
