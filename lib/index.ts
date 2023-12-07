@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { serializeError } from "./helpers/serialize-error";
 import IBrowserContext from "./interfaces/IBrowserContext";
 import IEventData from "./interfaces/IEventData";
@@ -163,11 +163,11 @@ async function captureException(input: any, extra?: Record<string, any>) {
                 data: payload
             }).then(() => {
                 // success
-            }).catch(() => {
-                console.warn('AppLogs SDK: Unable to submit the captured exception.');
+            }).catch((err: AxiosError<any>) => {
+                console.warn('AppLogs SDK: Unable to submit the captured exception.', err.response?.data?.message);
             })
         } else {
-            console.warn('AppLogs SDK: Unable to get initialization options.')
+            console.warn('AppLogs SDK: Unable to get initialization options. Make sure to restart the application after initialization.')
         }
     } catch (error) {
         console.error('AppLogs SDK: internal error.', serializeError(error));
@@ -221,14 +221,14 @@ async function logEvent(eventData: Omit<IEventData, "source" | "browserContext" 
                 data: payload
             }).then(() => {
                 // success
-            }).catch(() => {
-                console.warn('AppLogs SDK: Unable to submit the log event.');
+            }).catch((err: AxiosError<any>) => {
+                console.warn('AppLogs SDK: Unable to submit the log event.', err.response?.data?.message);
             })
         } else {
             console.warn('AppLogs SDK: make sure you call the init method with the required parameter (drainUrl).')
         }
     } catch (error) {
-        console.error('AppLogs SDK: internal error.', serializeError(error));
+        console.error('AppLogs Js Client SDK: internal error.', serializeError(error));
     }
 }
 
