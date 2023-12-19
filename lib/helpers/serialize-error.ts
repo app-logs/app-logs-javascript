@@ -70,6 +70,16 @@ const list = [
 
 const errorConstructors = new Map<string, ErrorConstructor>(list as any);
 
+const stringify_original = JSON.stringify;
+
+// big int parsing support
+function JsonStringify(value: any, replacer?: (this: any, key: string, value: any) => any, space?: string | number) {
+    replacer = (_key, value) => (typeof value === 'bigint'
+        ? value.toString()
+        : value)
+    return stringify_original(value, replacer, space);
+} JSON.stringify
+
 export class NonError extends Error {
     name = 'NonError';
 
@@ -79,7 +89,7 @@ export class NonError extends Error {
 
     static _prepareSuperMessage(message) {
         try {
-            return JSON.stringify(message);
+            return JsonStringify(message);
         } catch {
             return String(message);
         }
@@ -158,7 +168,7 @@ const destroyCircular = ({
     }
 
     if (useToJSON && typeof from.toJSON === 'function' && from[toJsonWasCalled] !== true) {
-        return toJSON(from);
+        return toJSON(Object.assign({}, from));
     }
 
     const continueDestroyCircular = (value: any) => destroyCircular({
