@@ -122,7 +122,9 @@ const commonProperties = [
 const toJsonWasCalled = Symbol('.toJSON was called');
 
 const toJSON = from => {
-    from[toJsonWasCalled] = true;
+    if (Object.isExtensible(from)) {
+        from[toJsonWasCalled] = true;
+    }
     const json = from.toJSON();
     delete from[toJsonWasCalled];
     return json;
@@ -168,7 +170,7 @@ const destroyCircular = ({
     }
 
     if (useToJSON && typeof from.toJSON === 'function' && from[toJsonWasCalled] !== true) {
-        return toJSON(Object.assign({}, from));
+        return toJSON(from);
     }
 
     const continueDestroyCircular = (value: any) => destroyCircular({
